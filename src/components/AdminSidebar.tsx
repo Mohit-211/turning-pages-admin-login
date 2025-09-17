@@ -22,7 +22,7 @@ import {
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Manuscript Queue", url: "/manuscript-queue", icon: FileText },
+  { title: "Editing Queue", url: "/editing-queue", icon: FileText },
   { title: "Editorial Suite", url: "/editorial-suite", icon: Edit3 },
   { title: "Projects", url: "/projects", icon: FolderOpen },
   { title: "Editors", url: "/editors", icon: Users },

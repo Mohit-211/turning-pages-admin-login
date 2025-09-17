@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
-import ManuscriptQueue from "./pages/ManuscriptQueue";
+import EditingQueue from "./pages/EditingQueue";
 import EditorialSuite from "./pages/EditorialSuite";
 import Projects from "./pages/Projects";
 import Editors from "./pages/Editors";
@@ -29,9 +29,9 @@ const App = () => (
               <Dashboard />
             </AdminLayout>
           } />
-          <Route path="/manuscript-queue" element={
+          <Route path="/editing-queue" element={
             <AdminLayout>
-              <ManuscriptQueue />
+              <EditingQueue />
             </AdminLayout>
           } />
           <Route path="/editorial-suite" element={
