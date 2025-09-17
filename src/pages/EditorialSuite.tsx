@@ -72,16 +72,34 @@ const plagiarismResults = [
     text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
     similarity: 95,
     source: "Wikipedia - Lorem Ipsum",
-    url: "https://en.wikipedia.org/wiki/Lorem_ipsum"
+    url: "https://en.wikipedia.org/wiki/Lorem_ipsum",
+    startIndex: 0,
+    endIndex: 50,
+    status: "high-risk"
   },
   {
     id: 2,
     text: "Sed do eiusmod tempor incididunt ut labore",
     similarity: 87,
     source: "Sample Text Database",
-    url: "https://example.com/sample-texts"
+    url: "https://example.com/sample-texts",
+    startIndex: 200,
+    endIndex: 240,
+    status: "needs-review"
+  },
+  {
+    id: 3,
+    text: "Ut enim ad minim veniam, quis nostrud exercitation",
+    similarity: 45,
+    source: "Generic Text Collection",
+    url: "https://example.com/generic-texts",
+    startIndex: 300,
+    endIndex: 348,
+    status: "acceptable"
   }
 ];
+
+const overallSimilarity = 72;
 
 const summaries = {
   chapter: "This chapter introduces the main character and establishes the setting in a small coastal town. The protagonist faces their first major challenge when they discover a mysterious letter.",
@@ -95,6 +113,8 @@ const EditorialSuite = () => {
   const [editorContent, setEditorContent] = useState(selectedChapter.content);
   const [showTrackChanges, setShowTrackChanges] = useState(false);
   const [notes, setNotes] = useState("");
+  const [highlightedMatch, setHighlightedMatch] = useState<number | null>(null);
+  const [isPlagiarismActive, setIsPlagiarismActive] = useState(false);
   const { toast } = useToast();
 
   const handleChapterSelect = (chapter: typeof chapters[0]) => {
@@ -152,6 +172,72 @@ const EditorialSuite = () => {
       title: "Copied",
       description: "Text copied to clipboard.",
     });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "high-risk":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "needs-review":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "acceptable":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "high-risk": return "High Risk";
+      case "needs-review": return "Needs Review";
+      case "acceptable": return "Acceptable";
+      default: return "Unknown";
+    }
+  };
+
+  const getSimilarityColor = (similarity: number) => {
+    if (similarity >= 80) return "text-red-600";
+    if (similarity >= 60) return "text-orange-600";
+    return "text-green-600";
+  };
+
+  const handleFlagSection = (resultId: number) => {
+    toast({
+      title: "Section Flagged",
+      description: "This section has been flagged for review and client notification.",
+    });
+  };
+
+  const handleSuggestRewrite = (resultId: number) => {
+    toast({
+      title: "Rewrite Suggested",
+      description: "AI rewrite suggestion has been generated for this section.",
+    });
+  };
+
+  const renderHighlightedText = (text: string) => {
+    if (!isPlagiarismActive) return text;
+    
+    let highlightedText = text;
+    
+    plagiarismResults.forEach((result, index) => {
+      const highlightClass = highlightedMatch === result.id 
+        ? "bg-red-300 border-b-2 border-red-500" 
+        : "bg-red-100 border-b border-red-300";
+      
+      highlightedText = highlightedText.replace(
+        result.text,
+        `<span 
+          class="${highlightClass} cursor-pointer transition-colors" 
+          onmouseenter="this.classList.add('bg-red-200')" 
+          onmouseleave="this.classList.remove('bg-red-200')"
+          data-match-id="${result.id}"
+        >${result.text}</span>`
+      );
+    });
+    
+    return highlightedText;
   };
 
   return (
@@ -249,12 +335,19 @@ const EditorialSuite = () => {
             </div>
           </div>
           <div className="flex-1 p-4">
-            <Textarea
-              value={editorContent}
-              onChange={(e) => setEditorContent(e.target.value)}
-              className="w-full h-full resize-none border-0 shadow-none focus-visible:ring-0 text-base leading-relaxed"
-              placeholder="Start editing the chapter content..."
-            />
+            {isPlagiarismActive ? (
+              <div 
+                className="w-full h-full p-4 border rounded-lg bg-background text-base leading-relaxed overflow-auto whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: renderHighlightedText(editorContent) }}
+              />
+            ) : (
+              <Textarea
+                value={editorContent}
+                onChange={(e) => setEditorContent(e.target.value)}
+                className="w-full h-full resize-none border-0 shadow-none focus-visible:ring-0 text-base leading-relaxed"
+                placeholder="Start editing the chapter content..."
+              />
+            )}
           </div>
         </div>
 
@@ -262,10 +355,34 @@ const EditorialSuite = () => {
         <div className="w-96 border-l bg-card">
           <Tabs defaultValue="suggestions" className="h-full flex flex-col">
             <TabsList className="grid w-full grid-cols-4 m-4">
-              <TabsTrigger value="suggestions" className="text-xs">AI</TabsTrigger>
-              <TabsTrigger value="plagiarism" className="text-xs">Plagiarism</TabsTrigger>
-              <TabsTrigger value="summaries" className="text-xs">Summary</TabsTrigger>
-              <TabsTrigger value="notes" className="text-xs">Notes</TabsTrigger>
+              <TabsTrigger 
+                value="suggestions" 
+                className="text-xs"
+                onClick={() => setIsPlagiarismActive(false)}
+              >
+                AI
+              </TabsTrigger>
+              <TabsTrigger 
+                value="plagiarism" 
+                className="text-xs"
+                onClick={() => setIsPlagiarismActive(true)}
+              >
+                Plagiarism
+              </TabsTrigger>
+              <TabsTrigger 
+                value="summaries" 
+                className="text-xs"
+                onClick={() => setIsPlagiarismActive(false)}
+              >
+                Summary
+              </TabsTrigger>
+              <TabsTrigger 
+                value="notes" 
+                className="text-xs"
+                onClick={() => setIsPlagiarismActive(false)}
+              >
+                Notes
+              </TabsTrigger>
             </TabsList>
 
             {/* AI Suggestions Tab */}
@@ -325,44 +442,109 @@ const EditorialSuite = () => {
 
             {/* Plagiarism Check Tab */}
             <TabsContent value="plagiarism" className="flex-1 m-0">
-              <div className="p-4">
-                <h3 className="font-semibold mb-4">Plagiarism Check</h3>
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <div className="space-y-4">
-                    {plagiarismResults.map((result) => (
-                      <Card key={result.id} className="border-l-4 border-orange-200">
-                        <CardContent className="p-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <Badge variant="destructive" className="text-xs">
-                                {result.similarity}% Match
-                              </Badge>
-                              <Search className="h-4 w-4 text-muted-foreground" />
+              <div className="p-4 h-full flex flex-col">
+                <h3 className="font-semibold mb-4">Plagiarism Analysis</h3>
+                
+                {/* Overall Result Card */}
+                <Card className="mb-6 border-2">
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <div className={`text-4xl font-bold mb-2 ${getSimilarityColor(overallSimilarity)}`}>
+                        {overallSimilarity}%
+                      </div>
+                      <div className="text-sm text-muted-foreground mb-3">
+                        Overall Similarity Score
+                      </div>
+                      <Badge 
+                        className={`${getStatusColor(
+                          overallSimilarity >= 80 ? "high-risk" : 
+                          overallSimilarity >= 60 ? "needs-review" : "acceptable"
+                        )} border`}
+                      >
+                        {getStatusLabel(
+                          overallSimilarity >= 80 ? "high-risk" : 
+                          overallSimilarity >= 60 ? "needs-review" : "acceptable"
+                        )}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Sources List */}
+                <div className="flex-1">
+                  <h4 className="font-medium mb-3 text-sm">Detected Sources ({plagiarismResults.length})</h4>
+                  <ScrollArea className="h-[calc(100vh-350px)]">
+                    <div className="space-y-3">
+                      {plagiarismResults.map((result) => (
+                        <Card 
+                          key={result.id} 
+                          className={`cursor-pointer transition-all hover:shadow-md ${
+                            highlightedMatch === result.id ? 'ring-2 ring-primary shadow-md' : ''
+                          }`}
+                          onMouseEnter={() => setHighlightedMatch(result.id)}
+                          onMouseLeave={() => setHighlightedMatch(null)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Badge 
+                                  className={`text-xs ${getSimilarityColor(result.similarity)} bg-white border`}
+                                >
+                                  {result.similarity}% Match
+                                </Badge>
+                                <Badge 
+                                  className={`${getStatusColor(result.status)} text-xs border`}
+                                >
+                                  {getStatusLabel(result.status)}
+                                </Badge>
+                              </div>
+                              
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground">Matched Text:</p>
+                                <p className="text-sm bg-red-50 p-2 rounded mt-1 border-l-3 border-red-200">
+                                  "{result.text}"
+                                </p>
+                              </div>
+                              
+                              <div>
+                                <p className="text-xs font-medium text-muted-foreground">Source:</p>
+                                <p className="text-sm font-medium">{result.source}</p>
+                                <a 
+                                  href={result.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                                >
+                                  <Search className="h-3 w-3" />
+                                  View Source
+                                </a>
+                              </div>
+                              
+                              <div className="flex gap-2 pt-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => handleFlagSection(result.id)}
+                                  className="text-xs"
+                                >
+                                  Flag Section
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleSuggestRewrite(result.id)}
+                                  className="text-xs"
+                                >
+                                  Suggest Rewrite
+                                </Button>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-sm font-medium">Flagged Text:</p>
-                              <p className="text-sm bg-orange-50 p-2 rounded mt-1">
-                                "{result.text}"
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium">Source:</p>
-                              <p className="text-sm text-muted-foreground">{result.source}</p>
-                              <a 
-                                href={result.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline"
-                              >
-                                View Source →
-                              </a>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </ScrollArea>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
             </TabsContent>
 
