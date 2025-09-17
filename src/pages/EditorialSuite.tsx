@@ -21,7 +21,11 @@ import {
   Check,
   X,
   Eye,
-  EyeOff
+  EyeOff,
+  Download,
+  ChevronDown,
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -102,9 +106,21 @@ const plagiarismResults = [
 const overallSimilarity = 72;
 
 const summaries = {
-  chapter: "This chapter introduces the main character and establishes the setting in a small coastal town. The protagonist faces their first major challenge when they discover a mysterious letter.",
-  midBook: "The story progresses as our protagonist uncovers a conspiracy involving the town's founding families. Alliances are formed and broken as the mystery deepens.",
-  full: "A compelling mystery novel that follows a young investigator as they uncover dark secrets in their hometown. The story masterfully weaves together family drama, historical intrigue, and personal growth in a satisfying conclusion."
+  chapter: {
+    text: "This chapter introduces the main character and establishes the setting in a small coastal town. The protagonist faces their first major challenge when they discover a mysterious letter.",
+    generated: "2024-01-15 14:30:00",
+    isGenerated: true
+  },
+  midBook: {
+    text: "The story progresses as our protagonist uncovers a conspiracy involving the town's founding families. Alliances are formed and broken as the mystery deepens.",
+    generated: "2024-01-15 14:32:00",
+    isGenerated: true
+  },
+  full: {
+    text: "A compelling mystery novel that follows a young investigator as they uncover dark secrets in their hometown. The story masterfully weaves together family drama, historical intrigue, and personal growth in a satisfying conclusion.",
+    generated: "2024-01-15 14:35:00",
+    isGenerated: true
+  }
 };
 
 const EditorialSuite = () => {
@@ -115,6 +131,9 @@ const EditorialSuite = () => {
   const [notes, setNotes] = useState("");
   const [highlightedMatch, setHighlightedMatch] = useState<number | null>(null);
   const [isPlagiarismActive, setIsPlagiarismActive] = useState(false);
+  const [summaryStates, setSummaryStates] = useState(summaries);
+  const [expandedSummaries, setExpandedSummaries] = useState<string[]>(["chapter", "midBook", "full"]);
+  const [generatingSummary, setGeneratingSummary] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleChapterSelect = (chapter: typeof chapters[0]) => {
@@ -213,6 +232,76 @@ const EditorialSuite = () => {
     toast({
       title: "Rewrite Suggested",
       description: "AI rewrite suggestion has been generated for this section.",
+    });
+  };
+
+  const generateSummary = async (type: "chapter" | "midBook" | "full") => {
+    setGeneratingSummary(type);
+    
+    // Simulate AI generation delay
+    setTimeout(() => {
+      const newSummary = {
+        text: getSummaryText(type),
+        generated: new Date().toLocaleString(),
+        isGenerated: true
+      };
+      
+      setSummaryStates(prev => ({
+        ...prev,
+        [type]: newSummary
+      }));
+      
+      // Expand the card when new summary is generated
+      if (!expandedSummaries.includes(type)) {
+        setExpandedSummaries(prev => [...prev, type]);
+      }
+      
+      setGeneratingSummary(null);
+      toast({
+        title: "Summary Generated",
+        description: `${getSummaryTitle(type)} has been generated successfully.`,
+      });
+    }, 2000);
+  };
+
+  const getSummaryText = (type: string) => {
+    const summaryTexts = {
+      chapter: `This chapter introduces the main character and establishes the setting in a small coastal town. The protagonist faces their first major challenge when they discover a mysterious letter. The narrative style combines elements of mystery and character development, setting up key plot points for future chapters.`,
+      midBook: `The story progresses as our protagonist uncovers a conspiracy involving the town's founding families. Alliances are formed and broken as the mystery deepens. Character relationships become more complex, and the stakes are raised significantly as secrets from the past begin to surface.`,
+      full: `A compelling mystery novel that follows a young investigator as they uncover dark secrets in their hometown. The story masterfully weaves together family drama, historical intrigue, and personal growth in a satisfying conclusion. The narrative maintains excellent pacing throughout while developing rich, multi-dimensional characters.`
+    };
+    return summaryTexts[type] || "Summary generated successfully.";
+  };
+
+  const getSummaryTitle = (type: string) => {
+    const titles = {
+      chapter: "Chapter Summary",
+      midBook: "Mid-Book Summary", 
+      full: "Full Synopsis"
+    };
+    return titles[type] || "Summary";
+  };
+
+  const toggleSummaryExpansion = (type: string) => {
+    setExpandedSummaries(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
+  const downloadSummary = (type: string, text: string) => {
+    const element = document.createElement('a');
+    const file = new Blob([text], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = `${type}-summary-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    toast({
+      title: "Summary Downloaded",
+      description: `${getSummaryTitle(type)} has been downloaded successfully.`,
     });
   };
 
@@ -550,71 +639,228 @@ const EditorialSuite = () => {
 
             {/* Summaries Tab */}
             <TabsContent value="summaries" className="flex-1 m-0">
-              <div className="p-4">
-                <h3 className="font-semibold mb-4">Summaries</h3>
-                <ScrollArea className="h-[calc(100vh-200px)]">
-                  <div className="space-y-4">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center justify-between">
-                          Chapter Summary
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            onClick={() => copyToClipboard(summaries.chapter)}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {summaries.chapter}
-                        </p>
-                      </CardContent>
-                    </Card>
+              <div className="p-4 h-full flex flex-col">
+                <h3 className="font-semibold mb-4">AI Summaries</h3>
+                
+                {/* Generation Buttons */}
+                <div className="grid grid-cols-1 gap-3 mb-6">
+                  <Button 
+                    onClick={() => generateSummary("chapter")}
+                    disabled={generatingSummary === "chapter"}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    {generatingSummary === "chapter" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate Chapter Summary
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => generateSummary("midBook")}
+                    disabled={generatingSummary === "midBook"}
+                    variant="outline"
+                  >
+                    {generatingSummary === "midBook" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate Mid-Book Summary
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => generateSummary("full")}
+                    disabled={generatingSummary === "full"}
+                    variant="outline"
+                  >
+                    {generatingSummary === "full" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate Full Synopsis
+                      </>
+                    )}
+                  </Button>
+                </div>
 
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center justify-between">
-                          Mid-Book Summary
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            onClick={() => copyToClipboard(summaries.midBook)}
+                {/* Results */}
+                <div className="flex-1">
+                  <ScrollArea className="h-[calc(100vh-400px)]">
+                    <div className="space-y-4">
+                      {/* Chapter Summary */}
+                      {summaryStates.chapter.isGenerated && (
+                        <Card className="border-2">
+                          <CardHeader 
+                            className="pb-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => toggleSummaryExpansion("chapter")}
                           >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {summaries.midBook}
-                        </p>
-                      </CardContent>
-                    </Card>
+                            <CardTitle className="text-sm flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {expandedSummaries.includes("chapter") ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                                Chapter Summary
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground font-normal">
+                                  {summaryStates.chapter.generated}
+                                </span>
+                                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(summaryStates.chapter.text)}
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => downloadSummary("chapter", summaryStates.chapter.text)}
+                                  >
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardTitle>
+                          </CardHeader>
+                          {expandedSummaries.includes("chapter") && (
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {summaryStates.chapter.text}
+                              </p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      )}
 
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm flex items-center justify-between">
-                          Full Synopsis
-                          <Button 
-                            size="sm" 
-                            variant="ghost"
-                            onClick={() => copyToClipboard(summaries.full)}
+                      {/* Mid-Book Summary */}
+                      {summaryStates.midBook.isGenerated && (
+                        <Card className="border-2">
+                          <CardHeader 
+                            className="pb-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => toggleSummaryExpansion("midBook")}
                           >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {summaries.full}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </ScrollArea>
+                            <CardTitle className="text-sm flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {expandedSummaries.includes("midBook") ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                                Mid-Book Summary
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground font-normal">
+                                  {summaryStates.midBook.generated}
+                                </span>
+                                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(summaryStates.midBook.text)}
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => downloadSummary("midBook", summaryStates.midBook.text)}
+                                  >
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardTitle>
+                          </CardHeader>
+                          {expandedSummaries.includes("midBook") && (
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {summaryStates.midBook.text}
+                              </p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      )}
+
+                      {/* Full Synopsis */}
+                      {summaryStates.full.isGenerated && (
+                        <Card className="border-2">
+                          <CardHeader 
+                            className="pb-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                            onClick={() => toggleSummaryExpansion("full")}
+                          >
+                            <CardTitle className="text-sm flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {expandedSummaries.includes("full") ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                                Full Synopsis
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground font-normal">
+                                  {summaryStates.full.generated}
+                                </span>
+                                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => copyToClipboard(summaryStates.full.text)}
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => downloadSummary("full", summaryStates.full.text)}
+                                  >
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardTitle>
+                          </CardHeader>
+                          {expandedSummaries.includes("full") && (
+                            <CardContent>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {summaryStates.full.text}
+                              </p>
+                            </CardContent>
+                          )}
+                        </Card>
+                      )}
+
+                      {/* Empty State */}
+                      {!summaryStates.chapter.isGenerated && !summaryStates.midBook.isGenerated && !summaryStates.full.isGenerated && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p className="text-sm">No summaries generated yet.</p>
+                          <p className="text-xs mt-1">Click the generate buttons above to create AI summaries.</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
               </div>
             </TabsContent>
 
