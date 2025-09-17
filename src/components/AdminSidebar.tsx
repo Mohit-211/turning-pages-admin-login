@@ -26,6 +26,7 @@ const navigationItems = [
   { title: "Editing Queue", url: "/editing-queue", icon: FileText },
   { title: "Editorial Suite", url: "/editorial-suite", icon: Edit3 },
   { title: "Projects", url: "/projects", icon: FolderOpen },
+  { title: "Users", url: "/users", icon: Users },
   { title: "Editors", url: "/editors", icon: Users },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Cover Generator", url: "/cover-generator", icon: Image },

@@ -10,6 +10,7 @@ import EditingQueue from "./pages/EditingQueue";
 import EditorialSuite from "./pages/EditorialSuite";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
+import Users from "./pages/Users";
 import Editors from "./pages/Editors";
 import Analytics from "./pages/Analytics";
 import AdminSettings from "./pages/AdminSettings";
@@ -52,6 +53,11 @@ const App = () => (
           <Route path="/project-details" element={
             <AdminLayout>
               <ProjectDetails />
+            </AdminLayout>
+          } />
+          <Route path="/users" element={
+            <AdminLayout>
+              <Users />
             </AdminLayout>
           } />
           <Route path="/editors" element={
