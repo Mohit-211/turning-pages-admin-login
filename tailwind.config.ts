@@ -22,6 +22,13 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover))",
+        },
+        admin: {
+          red: "hsl(var(--admin-red))",
+          "red-hover": "hsl(var(--admin-red-hover))",
+          bg: "hsl(var(--admin-bg))",
+          card: "hsl(var(--admin-card))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
