@@ -27,6 +27,8 @@ const AdminLogin = () => {
         title: "Login Successful",
         description: "Welcome to the Admin Panel!",
       });
+      // Redirect to dashboard after successful login
+      window.location.href = "/dashboard";
     } else {
       toast({
         title: "Login Failed",
@@ -113,7 +115,7 @@ const AdminLogin = () => {
           
           <div className="mt-4 text-center">
             <a 
-              href="#" 
+              href="/" 
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Back to User Login

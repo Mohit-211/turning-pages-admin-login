@@ -4,7 +4,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
+import ManuscriptQueue from "./pages/ManuscriptQueue";
+import EditorialSuite from "./pages/EditorialSuite";
+import Projects from "./pages/Projects";
+import Editors from "./pages/Editors";
+import Analytics from "./pages/Analytics";
+import AdminSettings from "./pages/AdminSettings";
 import NotFound from "./pages/NotFound";
+import { AdminLayout } from "./components/AdminLayout";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +24,41 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
+          } />
+          <Route path="/manuscript-queue" element={
+            <AdminLayout>
+              <ManuscriptQueue />
+            </AdminLayout>
+          } />
+          <Route path="/editorial-suite" element={
+            <AdminLayout>
+              <EditorialSuite />
+            </AdminLayout>
+          } />
+          <Route path="/projects" element={
+            <AdminLayout>
+              <Projects />
+            </AdminLayout>
+          } />
+          <Route path="/editors" element={
+            <AdminLayout>
+              <Editors />
+            </AdminLayout>
+          } />
+          <Route path="/analytics" element={
+            <AdminLayout>
+              <Analytics />
+            </AdminLayout>
+          } />
+          <Route path="/settings" element={
+            <AdminLayout>
+              <AdminSettings />
+            </AdminLayout>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -30,6 +30,18 @@ export default {
           bg: "hsl(var(--admin-bg))",
           card: "hsl(var(--admin-card))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
