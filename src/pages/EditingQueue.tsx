@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { CalendarIcon, Eye, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,6 +124,7 @@ const EditingQueue = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedManuscript, setSelectedManuscript] = useState<Manuscript | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const filteredManuscripts = mockManuscripts.filter((manuscript) => {
     if (selectedGenre !== "All Genres" && manuscript.genre !== selectedGenre) return false;
@@ -337,7 +339,13 @@ const EditingQueue = () => {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button className="bg-primary hover:bg-primary-hover text-primary-foreground">
+                <Button 
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    navigate(`/assign-project?id=${selectedManuscript.id}`);
+                  }}
+                  className="bg-primary hover:bg-primary-hover text-primary-foreground"
+                >
                   Assign Project
                 </Button>
                 <Button variant="outline">

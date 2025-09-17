@@ -12,6 +12,7 @@ import Projects from "./pages/Projects";
 import Editors from "./pages/Editors";
 import Analytics from "./pages/Analytics";
 import AdminSettings from "./pages/AdminSettings";
+import AssignProject from "./pages/AssignProject";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/AdminLayout";
 
@@ -58,6 +59,11 @@ const App = () => (
           <Route path="/settings" element={
             <AdminLayout>
               <AdminSettings />
+            </AdminLayout>
+          } />
+          <Route path="/assign-project" element={
+            <AdminLayout>
+              <AssignProject />
             </AdminLayout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
