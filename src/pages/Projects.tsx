@@ -260,7 +260,7 @@ const Projects = () => {
   };
 
   const handleOpenProject = (projectId: number) => {
-    navigate(`/editorial-suite?id=${projectId}`);
+    navigate(`/project-details?id=${projectId}`);
   };
 
   return (
