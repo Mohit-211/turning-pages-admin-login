@@ -14,6 +14,7 @@ import Analytics from "./pages/Analytics";
 import AdminSettings from "./pages/AdminSettings";
 import AssignProject from "./pages/AssignProject";
 import CoverGenerator from "./pages/CoverGenerator";
+import DeliverManuscript from "./pages/DeliverManuscript";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/AdminLayout";
 
@@ -70,6 +71,11 @@ const App = () => (
           <Route path="/cover-generator" element={
             <AdminLayout>
               <CoverGenerator />
+            </AdminLayout>
+          } />
+          <Route path="/deliver-manuscript" element={
+            <AdminLayout>
+              <DeliverManuscript />
             </AdminLayout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

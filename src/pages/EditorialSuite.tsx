@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -135,6 +136,7 @@ const EditorialSuite = () => {
   const [expandedSummaries, setExpandedSummaries] = useState<string[]>(["chapter", "midBook", "full"]);
   const [generatingSummary, setGeneratingSummary] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleChapterSelect = (chapter: typeof chapters[0]) => {
     setSelectedChapter(chapter);
@@ -165,10 +167,7 @@ const EditorialSuite = () => {
   };
 
   const handleDeliverManuscript = () => {
-    toast({
-      title: "Manuscript Delivered",
-      description: "The manuscript has been marked as delivered to the client.",
-    });
+    navigate("/deliver-manuscript?id=1");
   };
 
   const handleAcceptSuggestion = (suggestionId: number) => {
