@@ -20,7 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-
+import "./AdminSidebar.module.scss"
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Editing Queue", url: "/editing-queue", icon: FileText },
@@ -42,8 +42,11 @@ export function AdminSidebar() {
   const isCollapsed = state === "collapsed";
 
   return (
+    <div className="AdminSidebar">
+
     <Sidebar className={isCollapsed ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent>
+   
         <div className="p-4">
           <h2 className={`font-bold text-lg text-primary ${isCollapsed ? "hidden" : "block"}`}>
             Turning Pages
@@ -80,5 +83,6 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
+     </div>
   );
 }
